@@ -36,7 +36,17 @@ def gradcheck_naive(f, x, gradient_text=""):
         # to test cost functions with built in randomness later.
 
         ### YOUR CODE HERE:
-        numgrad = (f(x[ix]+h)[0]-f(x[ix]-h)[0])/(2*h)
+
+        random.setstate(rndstate)
+        x[ix] += h
+        f_x_plus_h = f(x)[0]  # f(x + h)
+        x[ix] -= h
+
+        random.setstate(rndstate)
+        x[ix] -= h
+        f_x_minus_h = f(x)[0]  # f(x - h)
+        x[ix] += h
+        numgrad = (f_x_plus_h - f_x_minus_h) / (2*h)
         ### END YOUR CODE
 
         # Compare gradients
@@ -70,39 +80,40 @@ def test_your_gradcheck_test():
     This function will not be called by the autograder, nor will
     your additional tests be graded.
     """
-    print("Running your sanity checks...")
-    ### YOUR OPTIONAL CODE HERE
-    cube_func = lambda x: (np.sum(x ** 3), 3 * (x ** 2))
+    pass
+    # print("Running your sanity checks...")
+    # ### YOUR OPTIONAL CODE HERE
+    # cube_func = lambda x: (np.sum(x ** 3), 3 * (x ** 2))
+    #
+    # print("Running cube sanity checks...")
+    # gradcheck_naive(cube_func, np.array(123.456))  # scalar test
+    # gradcheck_naive(cube_func, np.random.randn(3, ))  # 1-D test
+    # gradcheck_naive(cube_func, np.random.randn(4, 5))  # 2-D test
+    # print()
+    # #
+    # mult_func = lambda x: (np.sum(2 * x), 2*x/x)
+    #
+    # print("Running mult sanity checks...")
+    # gradcheck_naive(mult_func, np.array(123.456))  # scalar test
+    # gradcheck_naive(mult_func, np.random.randn(3, ))  # 1-D test
+    # gradcheck_naive(mult_func, np.random.randn(4, 5))  # 2-D test
+    # print()
+    #
+    # exp_func = lambda x: (np.exp(x), np.exp(x))
+    #
+    # print("Running Exp sanity checks...")
+    # gradcheck_naive(exp_func, np.array(123.456))  # scalar test
+    # gradcheck_naive(exp_func, np.random.randn(3, ))  # 1-D test
+    # gradcheck_naive(exp_func, np.random.randn(4, 5))  # 2-D test
+    # print()
 
-    print("Running cube sanity checks...")
-    gradcheck_naive(cube_func, np.array(123.456))  # scalar test
-    gradcheck_naive(cube_func, np.random.randn(3, ))  # 1-D test
-    gradcheck_naive(cube_func, np.random.randn(4, 5))  # 2-D test
-    print()
-
-    mult_func = lambda x: (np.sum(2 * x), 2*x/x)
-
-    print("Running mult sanity checks...")
-    gradcheck_naive(mult_func, np.array(123.456))  # scalar test
-    gradcheck_naive(mult_func, np.random.randn(3, ))  # 1-D test
-    gradcheck_naive(mult_func, np.random.randn(4, 5))  # 2-D test
-    print()
-
-    exp_func = lambda x: (np.exp(x), np.exp(x))
-
-    print("Running Exp sanity checks...")
-    gradcheck_naive(exp_func, np.array(123.456))  # scalar test
-    gradcheck_naive(exp_func, np.random.randn(3, ))  # 1-D test
-    gradcheck_naive(exp_func, np.random.randn(4, 5))  # 2-D test
-    print()
-
-    func1 = lambda x: ((x**4)*np.sin(x), (x**3) * (x * np.cos(x) + 4 * np.sin(x)))
-
-    print("Running (x**4)*np.sin(x) sanity checks...")
-    gradcheck_naive(func1, np.array(123.456))  # scalar test
-    gradcheck_naive(func1, np.random.randn(3, ))  # 1-D test
-    gradcheck_naive(func1, np.random.randn(4, 5))  # 2-D test
-    print()
+    # func1 = lambda x: ((x**4)*np.sin(x), (x**3) * (x * np.cos(x) + 4 * np.sin(x)))
+    #
+    # print("Running (x**4)*np.sin(x) sanity checks...")
+    # gradcheck_naive(func1, np.array(123.456))  # scalar test
+    # gradcheck_naive(func1, np.random.randn(3, ))  # 1-D test
+    # gradcheck_naive(func1, np.random.randn(4, 5))  # 2-D test
+    # print()
     ### END YOUR CODE
 
 
