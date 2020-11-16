@@ -36,7 +36,7 @@ def gradcheck_naive(f, x, gradient_text=""):
         # to test cost functions with built in randomness later.
 
         ### YOUR CODE HERE:
-        raise NotImplementedError
+        numgrad = (f(x[ix]+h)[0]-f(x[ix]-h)[0])/(2*h)
         ### END YOUR CODE
 
         # Compare gradients
@@ -63,7 +63,7 @@ def test_gradcheck_basic():
     print()
 
 
-def your_gradcheck_test():
+def test_your_gradcheck_test():
     """
     Use this space add any additional sanity checks by running:
         python q2_gradcheck.py
@@ -72,10 +72,40 @@ def your_gradcheck_test():
     """
     print("Running your sanity checks...")
     ### YOUR OPTIONAL CODE HERE
-    pass
+    cube_func = lambda x: (np.sum(x ** 3), 3 * (x ** 2))
+
+    print("Running cube sanity checks...")
+    gradcheck_naive(cube_func, np.array(123.456))  # scalar test
+    gradcheck_naive(cube_func, np.random.randn(3, ))  # 1-D test
+    gradcheck_naive(cube_func, np.random.randn(4, 5))  # 2-D test
+    print()
+
+    mult_func = lambda x: (np.sum(2 * x), 2*x/x)
+
+    print("Running mult sanity checks...")
+    gradcheck_naive(mult_func, np.array(123.456))  # scalar test
+    gradcheck_naive(mult_func, np.random.randn(3, ))  # 1-D test
+    gradcheck_naive(mult_func, np.random.randn(4, 5))  # 2-D test
+    print()
+
+    exp_func = lambda x: (np.exp(x), np.exp(x))
+
+    print("Running Exp sanity checks...")
+    gradcheck_naive(exp_func, np.array(123.456))  # scalar test
+    gradcheck_naive(exp_func, np.random.randn(3, ))  # 1-D test
+    gradcheck_naive(exp_func, np.random.randn(4, 5))  # 2-D test
+    print()
+
+    func1 = lambda x: ((x**4)*np.sin(x), (x**3) * (x * np.cos(x) + 4 * np.sin(x)))
+
+    print("Running (x**4)*np.sin(x) sanity checks...")
+    gradcheck_naive(func1, np.array(123.456))  # scalar test
+    gradcheck_naive(func1, np.random.randn(3, ))  # 1-D test
+    gradcheck_naive(func1, np.random.randn(4, 5))  # 2-D test
+    print()
     ### END YOUR CODE
 
 
 if __name__ == "__main__":
     test_gradcheck_basic()
-    your_gradcheck_test()
+    test_your_gradcheck_test()
