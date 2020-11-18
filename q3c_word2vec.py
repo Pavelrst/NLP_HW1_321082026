@@ -93,7 +93,27 @@ def neg_sampling_loss_and_gradient(
     indices = [outside_word_idx] + neg_sample_word_indices
 
     ### YOUR CODE HERE
-    raise NotImplementedError
+    # outside vectors - basically the embeddings of entire vocab
+    # make prediction for valid pair i.e. sigmoid(center_word * outside_word)
+    outside_vector = outside_vectors[outside_word_idx]
+    proba_outside = sigmoid(np.matmul(center_word_vec, outside_vector))
+
+    # sample K negative word vectors
+    # make prediction for each invalid pair i.e. sigmoid(center_word * negative_word)
+    neg_vectors = outside_vectors[neg_sample_word_indices]
+    proba_neg = sigmoid(- np.matmul(neg_vectors, center_word_vec))
+    loss = -np.log(proba_outside)-np.sum(np.log(proba_neg))
+
+    # dJ / d center_word_vec:
+    grad_center_vec = - (1 - proba_outside) * outside_vector + np.matmul((1 - proba_neg), neg_vectors)
+    assert center_word_vec.shape == grad_center_vec.shape
+
+    # dJ / dw_j
+    grad_outside_vecs = np.zeros_like(outside_vectors)
+    grad_outside_vecs[outside_word_idx] = (proba_outside - 1) * center_word_vec
+    for i, neg_index in enumerate(neg_sample_word_indices):
+        grad_outside_vecs[neg_index] += (1 - proba_neg[i]) * center_word_vec
+
     ### END YOUR CODE
 
     return loss, grad_center_vec, grad_outside_vecs
@@ -208,59 +228,59 @@ def test_word2vec_basic():
         skipgram, dummy_tokens, vec, dataset, 5, naive_softmax_loss_and_gradient),
         dummy_vectors, "naive_softmax_loss_and_gradient Gradient")
 
-#     print("==== Gradient check for skip-gram with neg_sampling_loss_and_gradient ====")
-#     gradcheck_naive(lambda vec: word2vec_sgd_wrapper(
-#         skipgram, dummy_tokens, vec, dataset, 5, neg_sampling_loss_and_gradient),
-#                     dummy_vectors, "neg_sampling_loss_and_gradient Gradient")
-#
-#     print("\n=== Results ===")
-#     print("Skip-Gram with naive_softmax_loss_and_gradient")
-#
-#     print("Your Result:")
-#     print("Loss: {}\nGradient wrt Center Vectors (dJ/dV):\n {}\nGradient wrt Outside Vectors (dJ/dU):\n {}\n".format(
-#             *skipgram("c", ["a", "b", "e", "d", "b", "c"], dummy_tokens,
-#                       dummy_vectors[:5, :], dummy_vectors[5:, :], dataset)
-#         )
-#     )
-#
-#     print("Expected Result: Value should approximate these:")
-#     print("""Loss: 11.16610900153398
-# Gradient wrt Center Vectors (dJ/dV):
-#  [[ 0.          0.          0.        ]
-#  [ 0.          0.          0.        ]
-#  [-1.26947339 -1.36873189  2.45158957]
-#  [ 0.          0.          0.        ]
-#  [ 0.          0.          0.        ]]
-# Gradient wrt Outside Vectors (dJ/dU):
-#  [[-0.41045956  0.18834851  1.43272264]
-#  [ 0.38202831 -0.17530219 -1.33348241]
-#  [ 0.07009355 -0.03216399 -0.24466386]
-#  [ 0.09472154 -0.04346509 -0.33062865]
-#  [-0.13638384  0.06258276  0.47605228]]
-#     """)
-#
-#     print("Skip-Gram with neg_sampling_loss_and_gradient")
-#     print("Your Result:")
-#     print("Loss: {}\nGradient wrt Center Vectors (dJ/dV):\n {}\n Gradient wrt Outside Vectors (dJ/dU):\n {}\n".format(
-#         *skipgram("c", ["a", "b"], dummy_tokens, dummy_vectors[:5, :], dummy_vectors[5:, :],
-#                   dataset, neg_sampling_loss_and_gradient)
-#         )
-#     )
-#     print("Expected Result: Value should approximate these:")
-#     print("""Loss: 16.15119285363322
-# Gradient wrt Center Vectors (dJ/dV):
-#  [[ 0.          0.          0.        ]
-#  [ 0.          0.          0.        ]
-#  [-4.54650789 -1.85942252  0.76397441]
-#  [ 0.          0.          0.        ]
-#  [ 0.          0.          0.        ]]
-#  Gradient wrt Outside Vectors (dJ/dU):
-#  [[-0.69148188  0.31730185  2.41364029]
-#  [-0.22716495  0.10423969  0.79292674]
-#  [-0.45528438  0.20891737  1.58918512]
-#  [-0.31602611  0.14501561  1.10309954]
-#  [-0.80620296  0.36994417  2.81407799]]
-#     """)
+    print("==== Gradient check for skip-gram with neg_sampling_loss_and_gradient ====")
+    gradcheck_naive(lambda vec: word2vec_sgd_wrapper(
+        skipgram, dummy_tokens, vec, dataset, 5, neg_sampling_loss_and_gradient),
+                    dummy_vectors, "neg_sampling_loss_and_gradient Gradient")
+
+    print("\n=== Results ===")
+    print("Skip-Gram with naive_softmax_loss_and_gradient")
+
+    print("Your Result:")
+    print("Loss: {}\nGradient wrt Center Vectors (dJ/dV):\n {}\nGradient wrt Outside Vectors (dJ/dU):\n {}\n".format(
+            *skipgram("c", ["a", "b", "e", "d", "b", "c"], dummy_tokens,
+                      dummy_vectors[:5, :], dummy_vectors[5:, :], dataset)
+        )
+    )
+
+    print("Expected Result: Value should approximate these:")
+    print("""Loss: 11.16610900153398
+Gradient wrt Center Vectors (dJ/dV):
+ [[ 0.          0.          0.        ]
+ [ 0.          0.          0.        ]
+ [-1.26947339 -1.36873189  2.45158957]
+ [ 0.          0.          0.        ]
+ [ 0.          0.          0.        ]]
+Gradient wrt Outside Vectors (dJ/dU):
+ [[-0.41045956  0.18834851  1.43272264]
+ [ 0.38202831 -0.17530219 -1.33348241]
+ [ 0.07009355 -0.03216399 -0.24466386]
+ [ 0.09472154 -0.04346509 -0.33062865]
+ [-0.13638384  0.06258276  0.47605228]]
+    """)
+
+    print("Skip-Gram with neg_sampling_loss_and_gradient")
+    print("Your Result:")
+    print("Loss: {}\nGradient wrt Center Vectors (dJ/dV):\n {}\n Gradient wrt Outside Vectors (dJ/dU):\n {}\n".format(
+        *skipgram("c", ["a", "b"], dummy_tokens, dummy_vectors[:5, :], dummy_vectors[5:, :],
+                  dataset, neg_sampling_loss_and_gradient)
+        )
+    )
+    print("Expected Result: Value should approximate these:")
+    print("""Loss: 16.15119285363322
+Gradient wrt Center Vectors (dJ/dV):
+ [[ 0.          0.          0.        ]
+ [ 0.          0.          0.        ]
+ [-4.54650789 -1.85942252  0.76397441]
+ [ 0.          0.          0.        ]
+ [ 0.          0.          0.        ]]
+ Gradient wrt Outside Vectors (dJ/dU):
+ [[-0.69148188  0.31730185  2.41364029]
+ [-0.22716495  0.10423969  0.79292674]
+ [-0.45528438  0.20891737  1.58918512]
+ [-0.31602611  0.14501561  1.10309954]
+ [-0.80620296  0.36994417  2.81407799]]
+    """)
 
 
 if __name__ == "__main__":
